@@ -1,32 +1,32 @@
-
 #!/usr/bin/node
+// This script prints all characters of a Star Wars movie based on
+// its MOVIE ID.
+// one character name per line in the same order as the
+// “characters” list in the /films/ endpoint
+
 const request = require('request');
-const api_url = 'https://swapi-api.alx-tools.com/api';
+const url = 'https://swapi-api.alx-tools.com/api/films/' + process.argv[2];
 
-
-if (process.argv.length > 2) {
-  const urlMovie = `${api_url}/films/${process.argv[2]}/`;
-
-  request(urlMovie, function (err, _, body) {
-    if (err == null) {
-    const fbody = JSON.parse(body).characters;
-
-    const characters = fbody.map(
-      url => new Promise((resolve, reject) => {
-        request(url, (promiseErr, _, charactersReqBody) => {
-          if (promiseErr) {
-            reject(promiseErr);
-          }
-          resolve(JSON.parse(charactersReqBody).name);
-        });
-      }));
-
-    Promise.all(characters)
-      .then(names => console.log(names.join('\n')))
-      .catch(allErr => console.log(allErr));
-    } else {
-      console.log(err);
-    }
+function getMovieStar (starUrl) {
+  return new Promise(function (resolve, reject) {
+    request(starUrl, function (error, response, body) {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(JSON.parse(body).name);
+      }
+    });
   });
 }
 
+request(url, async function (error, response, body) {
+  if (error) {
+    console.log(error);
+  } else {
+    const characters = JSON.parse(body).characters;
+    for (const starUrl of characters) {
+      console.log(await getMovieStar(starUrl));
+    }
+  }
+}
+);
